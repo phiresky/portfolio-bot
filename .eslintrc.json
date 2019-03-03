@@ -12,6 +12,11 @@
 	"parser": "@typescript-eslint/parser",
 	"rules": {
 		"prettier/prettier": ["warn"],
-		"no-console": "off"
+		"no-console": "off",
+		"@typescript-eslint/explicit-function-return-type": "off",
+		"import/no-unresolved": "off",
+		"import/prefer-default-export": "off",
+		"no-restricted-syntax": "off",
+		"no-await-in-loop": "off"
 	}
 }
