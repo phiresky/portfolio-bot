@@ -3,3 +3,4 @@
 # project specific
 *.csv
 .cache.json
+/.env

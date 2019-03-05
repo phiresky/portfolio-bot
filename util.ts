@@ -5,6 +5,9 @@ export interface MoneyAmount {
 	currency: string
 }
 
+function currencyToString(currency: string) {
+	return ({ EUR: "€", USD: "$" } as any)[currency] || currency
+}
 export function moneyToString(
 	x: MoneyAmount,
 	round: number,
@@ -19,12 +22,13 @@ export function moneyToString(
 		})
 		.replace(/,/g, thousandSep)
 
-	const o = `${str} ${x.currency}`
+	const o = `${str} ${currencyToString(x.currency)}`
 	if (explicitPlus && x.value >= 0) return `+${o}`
 	return o
 }
 export interface Investment {
 	isin: ISIN
+	// wkn: WKN
 	amount: number
 	buyPrice: MoneyAmount
 }

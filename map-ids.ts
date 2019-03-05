@@ -26,7 +26,8 @@ type MappingResp = {
 	]
 }[]
 
-export function getInfo(isin: ISIN) {
+export type Info = MappingResp[0]["data"][0]
+export function getInfo(isin: ISIN): Promise<Info> {
 	return diskCached(`ISIN:${isin}`, async () => {
 		const url = "https://api.openfigi.com/v2/mapping"
 		const arg = [
