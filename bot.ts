@@ -128,6 +128,19 @@ async function makeBot() {
 			}),
 		)
 	})
+	bot.command("sinceStart", async ctx => {
+		const timeString = `Since the beginning`
+		ctx.replyWithHTML(
+			await makeComparison(investments, timeString, async investment => {
+				const rlt = await getRealtimeQuote(investment.isin)
+				const current = { value: rlt.bid, currency: "EUR" }
+				return {
+					last: investment.buyPrice,
+					current,
+				}
+			}),
+		)
+	})
 	;(bot as any).launch()
 }
 
