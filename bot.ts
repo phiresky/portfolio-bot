@@ -169,7 +169,8 @@ async function makeBot() {
 		ctx.replyWithHTML(
 			await makeComparison(investments, timeString, async investment => {
 				const history = await getHistory(investment.isin)
-				const laste = hresToPrice(historyFind(history, fromD))
+				const laste = historyFind(history, fromD)
+				console.log(iso8601(fromD), laste.datetimeLast.localTime)
 				const current = doRealtime
 					? {
 							value: (await getRealtimeQuote(investment.isin))
@@ -178,7 +179,7 @@ async function makeBot() {
 					  }
 					: hresToPrice(historyFind(history, toD))
 				return {
-					last: laste,
+					last: hresToPrice(laste),
 					current,
 				}
 			}),
