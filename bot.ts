@@ -12,6 +12,9 @@ const adminId = process.env.BOT_ADMIN
 
 const ignoreSmallerThan = 15000
 
+function iso8601(date: Date) {
+	return date.toJSON().substr(0, 10)
+}
 async function makeComparison(
 	investments: Investment[],
 	timeString: string,
@@ -140,7 +143,6 @@ async function makeBot() {
 		const fromN = +from
 		const toN = +to
 
-		const timeString = `Between the market close two days ago and yesterday`
 		const ago = (days: number) => {
 			const d = new Date()
 			d.setDate(d.getDate() - days)
@@ -148,6 +150,10 @@ async function makeBot() {
 		}
 		const fromD = ago(fromN)
 		const toD = ago(toN)
+		const doRealtime = toN === 0
+		const timeString = `Between ${iso8601(fromD)} and ${
+			doRealtime ? "now" : iso8601(toD)
+		}`
 		const historyFind = (h: HistoryEntry[], date: Date): HistoryEntry => {
 			const searchTime = date.getTime() / 1000
 			const o = h.reduce((a, b) =>
@@ -164,14 +170,13 @@ async function makeBot() {
 			await makeComparison(investments, timeString, async investment => {
 				const history = await getHistory(investment.isin)
 				const laste = hresToPrice(historyFind(history, fromD))
-				const current =
-					toN === 0
-						? {
-								value: (await getRealtimeQuote(investment.isin))
-									.bid,
-								currency: "EUR",
-						  }
-						: hresToPrice(historyFind(history, toD))
+				const current = doRealtime
+					? {
+							value: (await getRealtimeQuote(investment.isin))
+								.bid,
+							currency: "EUR",
+					  }
+					: hresToPrice(historyFind(history, toD))
 				return {
 					last: laste,
 					current,
