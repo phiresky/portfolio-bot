@@ -26,7 +26,7 @@ async function getOnvistaId(isin: ISIN) {
 
 export async function getHistory(isin: ISIN, length: null | number = 100) {
 	const date = new Date().toISOString().substr(0, 10)
-	return diskCached(`onvista-history:${isin}:${date}`, async () => {
+	return diskCached(`onvista-history:${isin}:${length}:${date}`, async () => {
 		const ovid = await getOnvistaId(isin)
 		console.log(isin, "=>", ovid)
 		if (!ovid) throw Error("no onvista id")
