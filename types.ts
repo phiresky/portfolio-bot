@@ -35,6 +35,7 @@ export type HRes = {
 	totalVolumeR2: 0
 	totalMoneyR2: 0
 }[]
+export type HistoryEntry = HRes[0]
 
 export type RLTRes = {
 	first: 194.514

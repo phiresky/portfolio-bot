@@ -4,6 +4,7 @@ import { getHistory, getRealtimeQuote } from "./get-price-history"
 import { compare } from "./load"
 import { getInfo } from "./map-ids"
 import { getInvestments } from "./parse-csv"
+import { HistoryEntry } from "./types"
 import { Investment, MoneyAmount, moneyToString } from "./util"
 
 const token = process.env.BOT_TOKEN
@@ -69,6 +70,11 @@ async function makeBot() {
 			(a, b) => b.amount * b.buyPrice.value - a.amount * a.buyPrice.value,
 		)
 		.filter(v => v.amount * v.buyPrice.value > ignoreSmallerThan)
+
+	const hresToPrice = (h: HistoryEntry): MoneyAmount => ({
+		value: h.last,
+		currency: "EUR",
+	})
 	const last = new Map(
 		investments.map(i => [
 			i.isin,
@@ -123,6 +129,51 @@ async function makeBot() {
 				const current = { value: history[0].last, currency: "EUR" }
 				return {
 					last: { value: history[1].last, currency: "EUR" },
+					current,
+				}
+			}),
+		)
+	})
+
+	bot.command("between", async ctx => {
+		const [_, from, to = "0"] = ctx.message!.text!.split(/\s+/g)
+		const fromN = +from
+		const toN = +to
+
+		const timeString = `Between the market close two days ago and yesterday`
+		const ago = (days: number) => {
+			const d = new Date()
+			d.setDate(d.getDate() - days)
+			return d
+		}
+		const fromD = ago(fromN)
+		const toD = ago(toN)
+		const historyFind = (h: HistoryEntry[], date: Date): HistoryEntry => {
+			const searchTime = date.getTime() / 1000
+			const o = h.reduce((a, b) =>
+				Math.abs(a.datetimeLast.UTCTimeStamp - searchTime) <
+				Math.abs(b.datetimeLast.UTCTimeStamp - searchTime)
+					? a
+					: b,
+			)
+			if (!o) throw Error("h empty")
+			return o
+		}
+
+		ctx.replyWithHTML(
+			await makeComparison(investments, timeString, async investment => {
+				const history = await getHistory(investment.isin)
+				const laste = hresToPrice(historyFind(history, fromD))
+				const current =
+					toN === 0
+						? {
+								value: (await getRealtimeQuote(investment.isin))
+									.bid,
+								currency: "EUR",
+						  }
+						: hresToPrice(historyFind(history, toD))
+				return {
+					last: laste,
 					current,
 				}
 			}),

@@ -24,14 +24,21 @@ async function getOnvistaId(isin: ISIN) {
 	})
 }
 
-export async function getHistory(isin: ISIN) {
+export async function getHistory(isin: ISIN, length: null | number = 100) {
 	const date = new Date().toISOString().substr(0, 10)
 	return diskCached(`onvista-history:${isin}:${date}`, async () => {
 		const ovid = await getOnvistaId(isin)
 		console.log(isin, "=>", ovid)
 		if (!ovid) throw Error("no onvista id")
 		const body = new URLSearchParams()
-		body.append("datetimeTzStartRange", "#*#")
+		let start = "#*#"
+		if (length !== null) {
+			const fromdate = new Date()
+			fromdate.setDate(fromdate.getDate() - length)
+			start = fromdate.toLocaleDateString("de-DE")
+			console.log("from", start)
+		}
+		body.append("datetimeTzStartRange", start)
 		body.append("timeSpan", "1Y")
 		body.append("codeResolution", "1D")
 		body.append("idNotation", ovid)
