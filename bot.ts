@@ -1,4 +1,4 @@
-import Telegraf from "telegraf"
+import Telegraf, { ContextMessageUpdate } from "telegraf"
 import { format as timeago } from "timeago.js"
 import { getHistory, getRealtimeQuote } from "./get-price-history"
 import { compare } from "./load"
@@ -15,6 +15,19 @@ const ignoreSmallerThan = 15000
 function iso8601(date: Date) {
 	return date.toJSON().substr(0, 10)
 }
+
+function historyFind(h: HistoryEntry[], date: Date): HistoryEntry {
+	const searchTime = date.getTime() / 1000
+	const o = h.reduce((a, b) =>
+		Math.abs(a.datetimeLast.UTCTimeStamp - searchTime) <
+		Math.abs(b.datetimeLast.UTCTimeStamp - searchTime)
+			? a
+			: b,
+	)
+	if (!o) throw Error("h empty")
+	return o
+}
+
 async function makeComparison(
 	investments: Investment[],
 	timeString: string,
@@ -51,6 +64,54 @@ async function makeComparison(
 		false,
 	)}</b>.\n\n${resp}`
 }
+
+const hresToPrice = (h: HistoryEntry): MoneyAmount => ({
+	value: h.last,
+	currency: "EUR",
+})
+
+async function between(
+	ctx: ContextMessageUpdate,
+	investments: Investment[],
+	fromN: number,
+	toN: number,
+	overrideTimeString?: string,
+) {
+	const ago = (days: number) => {
+		const d = new Date()
+		d.setDate(d.getDate() - days)
+		return d
+	}
+	const fromD = ago(fromN)
+	const toD = ago(toN)
+	const doRealtime = toN === 0
+	const timeString =
+		overrideTimeString ||
+		`Between ${iso8601(fromD)} and ${doRealtime ? "now" : iso8601(toD)}`
+
+	ctx.replyWithHTML(
+		await makeComparison(investments, timeString, async investment => {
+			const history = await getHistory(investment.isin)
+			const laste = historyFind(history, fromD)
+			console.log(
+				iso8601(fromD),
+				"nearest:",
+				laste.datetimeLast.localTime,
+			)
+			const current = doRealtime
+				? {
+						value: (await getRealtimeQuote(investment.isin)).bid,
+						currency: "EUR",
+				  }
+				: hresToPrice(historyFind(history, toD))
+			return {
+				last: hresToPrice(laste),
+				current,
+			}
+		}),
+	)
+}
+
 async function makeBot() {
 	if (!token) throw Error(`supply bot token as env BOT_TOKEN`)
 	const bot = new Telegraf(token)
@@ -74,10 +135,6 @@ async function makeBot() {
 		)
 		.filter(v => v.amount * v.buyPrice.value > ignoreSmallerThan)
 
-	const hresToPrice = (h: HistoryEntry): MoneyAmount => ({
-		value: h.last,
-		currency: "EUR",
-	})
 	const last = new Map(
 		investments.map(i => [
 			i.isin,
@@ -112,78 +169,18 @@ async function makeBot() {
 	})
 	bot.command("sinceYesterday", async ctx => {
 		const timeString = `Since the market close yesterday`
-		ctx.replyWithHTML(
-			await makeComparison(investments, timeString, async investment => {
-				const history = await getHistory(investment.isin)
-				const rlt = await getRealtimeQuote(investment.isin)
-				const current = { value: rlt.bid, currency: "EUR" }
-				return {
-					last: { value: history[0].last, currency: "EUR" },
-					current,
-				}
-			}),
-		)
+		await between(ctx, investments, -1, 0, timeString)
 	})
 	bot.command("before", async ctx => {
 		const timeString = `Between the market close two days ago and yesterday`
-		ctx.replyWithHTML(
-			await makeComparison(investments, timeString, async investment => {
-				const history = await getHistory(investment.isin)
-				const current = { value: history[0].last, currency: "EUR" }
-				return {
-					last: { value: history[1].last, currency: "EUR" },
-					current,
-				}
-			}),
-		)
+		await between(ctx, investments, -2, -1, timeString)
 	})
 
 	bot.command("between", async ctx => {
 		const [_, from, to = "0"] = ctx.message!.text!.split(/\s+/g)
 		const fromN = +from
 		const toN = +to
-
-		const ago = (days: number) => {
-			const d = new Date()
-			d.setDate(d.getDate() - days)
-			return d
-		}
-		const fromD = ago(fromN)
-		const toD = ago(toN)
-		const doRealtime = toN === 0
-		const timeString = `Between ${iso8601(fromD)} and ${
-			doRealtime ? "now" : iso8601(toD)
-		}`
-		const historyFind = (h: HistoryEntry[], date: Date): HistoryEntry => {
-			const searchTime = date.getTime() / 1000
-			const o = h.reduce((a, b) =>
-				Math.abs(a.datetimeLast.UTCTimeStamp - searchTime) <
-				Math.abs(b.datetimeLast.UTCTimeStamp - searchTime)
-					? a
-					: b,
-			)
-			if (!o) throw Error("h empty")
-			return o
-		}
-
-		ctx.replyWithHTML(
-			await makeComparison(investments, timeString, async investment => {
-				const history = await getHistory(investment.isin)
-				const laste = historyFind(history, fromD)
-				console.log(iso8601(fromD), laste.datetimeLast.localTime)
-				const current = doRealtime
-					? {
-							value: (await getRealtimeQuote(investment.isin))
-								.bid,
-							currency: "EUR",
-					  }
-					: hresToPrice(historyFind(history, toD))
-				return {
-					last: hresToPrice(laste),
-					current,
-				}
-			}),
-		)
+		await between(ctx, investments, fromN, toN)
 	})
 	bot.command("sinceStart", async ctx => {
 		const timeString = `Since the beginning`
