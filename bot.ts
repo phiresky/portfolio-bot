@@ -169,11 +169,11 @@ async function makeBot() {
 	})
 	bot.command("sinceYesterday", async ctx => {
 		const timeString = `Since the market close yesterday`
-		await between(ctx, investments, -1, 0, timeString)
+		await between(ctx, investments, 1, 0, timeString)
 	})
 	bot.command("before", async ctx => {
 		const timeString = `Between the market close two days ago and yesterday`
-		await between(ctx, investments, -2, -1, timeString)
+		await between(ctx, investments, 2, 1, timeString)
 	})
 
 	bot.command("between", async ctx => {
