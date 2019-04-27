@@ -19,7 +19,6 @@ export function compare(pa: MoneyAmount, pb: MoneyAmount, count: number) {
 }
 
 export function rltToPrice(p: RLTRes): MoneyAmount {
-	console.log("BEE", p.bid, p.price)
 	return {
 		value: p.bid || p.price,
 		currency: "EUR",
