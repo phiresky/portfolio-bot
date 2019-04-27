@@ -12,7 +12,7 @@ export async function getInvestments() {
 	})
 	const rdata = result.data as string[][]
 	while (!rdata[0].includes("Bestand")) {
-		result.data.shift()
+		rdata.shift()
 	}
 	const [h, ...data] = rdata
 	const get = (z: any[], header: string) => z[h.indexOf(header)]
