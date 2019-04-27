@@ -4,23 +4,41 @@ import { diskCached } from "./cache"
 import { ISIN } from "./nominal"
 import { HRes, RLTRes } from "./types"
 
+async function idFromHtml(isin: string) {
+	const found = await fetch(
+		`https://www.onvista.de/suche.html?SEARCH_VALUE=${isin}`,
+	)
+	if (!found.ok) {
+		console.error(found.status, found.statusText, await found.text())
+		throw Error("getOnvistaId")
+	}
+	const res = await found.text()
+	const dom = new JSDOM(res)
+
+	const ele = dom.window.document.querySelector(
+		"div.push-quote.with-performance.with-datetime",
+	)
+	if (!ele) throw Error(`could not find qoute element`)
+	return ele.getAttribute("data-notation")
+}
+
 async function getOnvistaId(isin: ISIN) {
 	return diskCached(`onvista-id:${isin}`, async () => {
 		const found = await fetch(
-			`https://www.onvista.de/suche.html?SEARCH_VALUE=${isin}`,
+			`https://www.onvista.de/onvista/boxes/assetSearch.json?doSubmit=Suchen&portfolioName=&searchValue=${isin}`,
 		)
 		if (!found.ok) {
 			console.error(found.status, found.statusText, await found.text())
 			throw Error("getOnvistaId")
 		}
-		const res = await found.text()
-		const dom = new JSDOM(res)
+		const ressi = await found.json()
+		const iiiid = ressi.onvista.results.asset[0].notationid
+		if (iiiid) {
+			return String(iiiid)
+		}
 
-		const ele = dom.window.document.querySelector(
-			"div.push-quote.with-performance.with-datetime",
-		)
-		if (!ele) throw Error(`could not find qoute element`)
-		return ele.getAttribute("data-notation")
+		console.warn("could not get notationid from json, fallback to html")
+		return idFromHtml(isin)
 	})
 }
 

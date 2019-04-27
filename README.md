@@ -22,7 +22,7 @@ yarn bot
 
 <b>Available commands:</b>
 
--   /between &lt;A&gt; &lt;B&gt; show difference between closing time A days ago to B days ago
+-   /between &lt;A&gt; &lt;B&gt; show difference between closing time A days ago to B days ago. 0 days ago means the current live price instead of closing price
     note that 0 days ago gets the current live price instead of closing price
 -   /sinceYesterday = /between 1 0
 -   /before = /between 2 1

@@ -34,7 +34,7 @@ async function go() {
 		)
 			.toISOString()
 			.slice(0, 10)
-		const currentPrice = { value: rlt.bid, currency: "EUR" }
+		const currentPrice = { value: rlt.bid || rlt.price, currency: "EUR" }
 		console.log(
 			`${info.name} (ISIN ${investment.isin}): ${moneyToString(
 				{
