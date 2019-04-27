@@ -1,7 +1,7 @@
 import Telegraf, { ContextMessageUpdate } from "telegraf"
 import { format as timeago } from "timeago.js"
 import { getHistory, getRealtimeQuote } from "./get-price-history"
-import { compare } from "./load"
+import { compare, hresToPrice, rltToPrice } from "./load"
 import { getInfo } from "./map-ids"
 import { getInvestments } from "./parse-csv"
 import { HistoryEntry } from "./types"
@@ -70,11 +70,6 @@ async function makeComparison(
 	)}</b>.\n\n${resp}`
 }
 
-const hresToPrice = (h: HistoryEntry): MoneyAmount => ({
-	value: h.last,
-	currency: "EUR",
-})
-
 async function between(
 	ctx: ContextMessageUpdate,
 	investments: Investment[],
@@ -104,10 +99,7 @@ async function between(
 				laste.datetimeLast.localTime,
 			)
 			const current = doRealtime
-				? {
-						value: (await getRealtimeQuote(investment.isin)).bid,
-						currency: "EUR",
-				  }
+				? rltToPrice(await getRealtimeQuote(investment.isin))
 				: hresToPrice(historyFind(history, toD))
 			return {
 				last: hresToPrice(laste),
@@ -162,7 +154,7 @@ async function makeBot() {
 			await makeComparison(investments, timeString, async investment => {
 				//  const history = await getHistory(isin)
 				const rlt = await getRealtimeQuote(investment.isin)
-				const current = { value: rlt.bid, currency: "EUR" }
+				const current = rltToPrice(rlt)
 				const o = last.get(investment.isin)
 				if (!o) throw Error(`could not find ${investment.isin}`)
 				const lastPrice = o.price
@@ -196,7 +188,7 @@ async function makeBot() {
 		ctx.replyWithHTML(
 			await makeComparison(investments, timeString, async investment => {
 				const rlt = await getRealtimeQuote(investment.isin)
-				const current = { value: rlt.bid, currency: "EUR" }
+				const current = rltToPrice(rlt)
 				return {
 					last: investment.buyPrice,
 					current,

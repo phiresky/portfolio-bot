@@ -1,6 +1,7 @@
 import { getHistory, getRealtimeQuote } from "./get-price-history"
 import { getInfo } from "./map-ids"
 import { getInvestments } from "./parse-csv"
+import { HistoryEntry, RLTRes } from "./types"
 import { MoneyAmount, moneyToString } from "./util"
 
 export function compare(pa: MoneyAmount, pb: MoneyAmount, count: number) {
@@ -16,6 +17,18 @@ export function compare(pa: MoneyAmount, pb: MoneyAmount, count: number) {
 		true,
 	)}`
 }
+
+export function rltToPrice(p: RLTRes): MoneyAmount {
+	console.log("BEE", p.bid, p.price)
+	return {
+		value: p.bid || p.price,
+		currency: "EUR",
+	}
+}
+export const hresToPrice = (h: HistoryEntry): MoneyAmount => ({
+	value: h.last,
+	currency: "EUR",
+})
 
 async function go() {
 	const investments = await getInvestments()
@@ -34,7 +47,7 @@ async function go() {
 		)
 			.toISOString()
 			.slice(0, 10)
-		const currentPrice = { value: rlt.bid || rlt.price, currency: "EUR" }
+		const currentPrice = rltToPrice(rlt)
 		console.log(
 			`${info.name} (ISIN ${investment.isin}): ${moneyToString(
 				{
