@@ -10,7 +10,7 @@ export async function getInvestments() {
 	const result = Papa.parse(await fs.readFile("./depot.csv", "utf8"), {
 		delimiter: ";",
 	})
-	while (result.data[0][0] !== "Bestand") {
+	while (!(result.data[0] as string[]).includes("Bestand")) {
 		result.data.shift()
 	}
 	const [h, ...data] = result.data
