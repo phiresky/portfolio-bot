@@ -8,9 +8,14 @@ import { HistoryEntry } from "./types"
 import { Investment, MoneyAmount, moneyToString } from "./util"
 
 const token = process.env.BOT_TOKEN
-const adminId = process.env.BOT_ADMIN
+let adminId = process.env.BOT_ADMIN
+if (!adminId) {
+	console.warn(
+		"warning: env.BOT_ADMIN not set --- admin will be set to the first user that messages the bot",
+	)
+}
 
-const ignoreSmallerThan = 15000
+const ignoreSmallerThan = +(process.env.ignoreSmallerThan || 0)
 
 function iso8601(date: Date) {
 	return date.toJSON().substr(0, 10)
@@ -117,6 +122,10 @@ async function makeBot() {
 	const bot = new Telegraf(token)
 
 	bot.use((ctx, next) => {
+		if (!adminId && ctx.from) {
+			adminId = String(ctx.from.id)
+			console.warn(`BOT_ADMIN set to ${adminId}`)
+		}
 		console.log("msg", ctx.message && ctx.message.text, ctx.from)
 		if (next && ctx.from && String(ctx.from.id) === adminId)
 			(next as any)(ctx)
