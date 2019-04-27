@@ -10,10 +10,11 @@ export async function getInvestments() {
 	const result = Papa.parse(await fs.readFile("./depot.csv", "utf8"), {
 		delimiter: ";",
 	})
-	while (!(result.data[0] as string[]).includes("Bestand")) {
+	const rdata = result.data as string[][]
+	while (!rdata[0].includes("Bestand")) {
 		result.data.shift()
 	}
-	const [h, ...data] = result.data
+	const [h, ...data] = rdata
 	const get = (z: any[], header: string) => z[h.indexOf(header)]
 	const investments: Investment[] = data
 		.filter(inp => get(inp, "ISIN"))
