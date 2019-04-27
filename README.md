@@ -1,7 +1,7 @@
 ## Setup
 
 ```
-yarn
+yarn # install dependencies
 ```
 
 Create a file called depot.csv with the following contents:
@@ -17,3 +17,13 @@ Then ask [BotFather](https://t.me/botfather) for a bot token and start the bot w
 export BOT_TOKEN=123:AbcE34n
 yarn bot
 ```
+
+##
+
+<b>Available commands:</b>
+
+-   /between &lt;A&gt; &lt;B&gt; show difference between closing time A days ago to B days ago
+-   /sinceYesterday = /between 1 0
+-   /before = /between 2 1
+-   /sinceLast - show difference since last /sinceLast request
+-   /sinceStart - show difference compared to your original buy price

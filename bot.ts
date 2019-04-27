@@ -121,7 +121,7 @@ async function makeBot() {
 	if (!token) throw Error(`supply bot token as env BOT_TOKEN`)
 	const bot = new Telegraf(token)
 
-	bot.use((ctx, next) => {
+	bot.on("message", (ctx, next) => {
 		if (!adminId && ctx.from) {
 			adminId = String(ctx.from.id)
 			console.warn(`BOT_ADMIN set to ${adminId}`)
@@ -203,6 +203,17 @@ async function makeBot() {
 				}
 			}),
 		)
+	})
+	bot.on("message", ctx => {
+		ctx.replyWithHTML(`
+<b>Available commands:</b>
+
+/between &lt;A&gt; &lt;B&gt; show difference between closing time A days ago to B days ago
+/sinceYesterday = /between 1 0
+/before = /between 2 1
+/sinceLast - show difference since last /sinceLast request
+/sinceStart - show difference compared to your original buy price
+		`)
 	})
 	;(bot as any).launch()
 }
