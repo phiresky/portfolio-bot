@@ -55,7 +55,11 @@ export async function getHistory(isin: ISIN, length: null | number = 100) {
 			if (length !== null) {
 				const fromdate = new Date()
 				fromdate.setDate(fromdate.getDate() - length)
-				start = fromdate.toLocaleDateString("de-DE")
+				start = fromdate.toLocaleDateString("de-DE", {
+					day: "2-digit",
+					month: "2-digit",
+					year: "numeric",
+				})
 				console.log("from", start)
 			}
 			body.append("datetimeTzStartRange", start)
