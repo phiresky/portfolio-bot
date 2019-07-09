@@ -91,7 +91,7 @@ async function between(
 
 	ctx.replyWithHTML(
 		await makeComparison(investments, timeString, async investment => {
-			const history = await getHistory(investment.isin)
+			const history = await getHistory(investment.isin, 5 * 365)
 			const laste = historyFind(history, fromD)
 			console.log(
 				iso8601(fromD),
