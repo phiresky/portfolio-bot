@@ -137,3 +137,52 @@ export type RLTRes = {
 	propertyFlagsAsk: 0
 	propertyFlagsBid: 0
 }
+
+export type SearchBoxJson = {
+	onvista: {
+		addata: {
+			iscurrency: false
+			searchvalue: "FDAXC1"
+			name: "DAX FUTURE (FDAX) - EUX/C1"
+			nsin: null
+			searchlink: "/zertifikate/suche/vergleich.html?SEARCH_VALUE=FDAXC1&ID_GROUP_ISSUER=53882&CAT_ID=15&STEP=2"
+			mobile: true
+			isapp: false
+			mobiletrackingid: "20034035"
+			mobilederivativetype: "KnockoutCertificate"
+			mobilederivativetypename: "Knock-Outs"
+			trackingid: "8389542"
+			derivativetype: "KnockoutCertificate"
+			derivativetypename: "Knock-Outs"
+			issuerid: 53882
+		}
+		results: {
+			asset: [
+				{
+					name: "SPDR MSCI ACWI UCITS ETF - USD ACC"
+					assetname: "SPDR MSCI ACWI UCITS ETF - USD ACC"
+					shortname: "SPDR MSCI ACWI UCITS ETF - USD ACC"
+					snapshotlink: "https://www.onvista.de/fonds/SPDR-MSCI-ACWI-UCITS-ETF-USD-ACC-Fonds-IE00B44Z5B48"
+					type: "Fonds"
+					subtype: null
+					assettype: "Fund"
+					nsin: "A1JJTC"
+					isin: "IE00B44Z5B48"
+					notationid: 48810243
+					id: "40903376"
+					symbol: "SPYY"
+				},
+			]
+			supplierNews: [
+				{
+					headline: "Tesla \u00fcberrascht mit Quartalsgewinn \u2013 Apple erwartet sinkende iPhone-Ums\u00e4tze"
+					url: "https://www.onvista.de/news/tesla-ueberrascht-mit-quartalsgewinn-apple-erwartet-sinkende-iphone-umsaetze-356062671"
+					timestamp: 1588671600
+					supplier: "HSBC"
+					source: "HSBC"
+					id: 356062671
+				},
+			]
+		}
+	}
+}
