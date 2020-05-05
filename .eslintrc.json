@@ -2,6 +2,7 @@
 	"extends": [
 		"eslint:recommended",
 		"airbnb",
+		"plugin:@typescript-eslint/eslint-recommended",
 		"plugin:@typescript-eslint/recommended",
 		"plugin:react/recommended",
 		"prettier",
@@ -18,6 +19,7 @@
 		"import/prefer-default-export": "off",
 		"no-restricted-syntax": "off",
 		"no-await-in-loop": "off",
-		"@typescript-eslint/no-non-null-assertion": "warn"
+		"@typescript-eslint/no-non-null-assertion": "warn",
+		"import/extensions": ["off"]
 	}
 }
